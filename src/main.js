@@ -31,6 +31,7 @@ function onSearchImages(e) {
           titleColor: '#FFFFFF',
           messageColor: '#FFFFFF',
         });
+        document.querySelector('.load-btn').classList.add('hidden');
       } else {
         renderGallery(data.hits);
         document.querySelector('.load-btn').classList.remove('hidden');
