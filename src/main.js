@@ -8,7 +8,7 @@ const form = document.querySelector('.form');
 const gallery = document.querySelector('.gallery');
 const loadBtn = document.querySelector('.load-btn');
 let lightbox;
-let countPage = 1;
+let countPage;
 let searchValue;
 
 form.addEventListener('submit', onSearchImages);
@@ -19,6 +19,7 @@ function onSearchImages(e) {
   gallery.innerHTML = '';
   document.querySelector('.loader').classList.remove('hidden');
   searchValue = form.elements.q.value;
+  countPage = 1;
   getImages(searchValue)
     .then(data => {
       if (data.hits.length === 0) {
