@@ -7,6 +7,8 @@ import 'izitoast/dist/css/iziToast.min.css';
 const form = document.querySelector('.form');
 const gallery = document.querySelector('.gallery');
 const loadBtn = document.querySelector('.load-btn');
+const loader = document.querySelector('.loader');
+
 let lightbox;
 let countPage;
 let searchValue;
@@ -17,31 +19,42 @@ loadBtn.addEventListener('click', onLoadImages);
 function onSearchImages(e) {
   e.preventDefault();
   gallery.innerHTML = '';
-  document.querySelector('.loader').classList.remove('hidden');
-  searchValue = form.elements.q.value;
-  countPage = 1;
-  getImages(searchValue)
-    .then(data => {
-      if (data.hits.length === 0) {
-        iziToast.show({
-          message:
-            'Sorry, there are no images matching your search query. Please try again!',
-          position: 'topRight',
-          backgroundColor: '#EF4040',
-          titleColor: '#FFFFFF',
-          messageColor: '#FFFFFF',
-        });
-        document.querySelector('.load-btn').classList.add('hidden');
-      } else {
-        renderGallery(data.hits);
-        document.querySelector('.load-btn').classList.remove('hidden');
-      }
-    })
-    .catch(error => console.log(error))
-    .finally(() => {
-      document.querySelector('.loader').classList.add('hidden');
-      form.reset();
+  loader.classList.remove('hidden');
+  searchValue = form.elements.q.value.trim();
+  if (searchValue !== '') {
+    getImages(searchValue)
+      .then(data => {
+        if (data.hits.length === 0) {
+          iziToast.show({
+            message:
+              'Sorry, there are no images matching your search query. Please try again!',
+            position: 'topRight',
+            backgroundColor: '#EF4040',
+            titleColor: '#FFFFFF',
+            messageColor: '#FFFFFF',
+          });
+          loadBtn.classList.add('hidden');
+        } else {
+          countPage = 1;
+          renderGallery(data.hits);
+          loadBtn.classList.remove('hidden');
+        }
+      })
+      .catch(error => console.log(error))
+      .finally(() => {
+        loader.classList.add('hidden');
+      });
+  } else {
+    iziToast.show({
+      message: 'Please fill out the search field',
+      position: 'topRight',
+      backgroundColor: '#EF4040',
+      titleColor: '#FFFFFF',
+      messageColor: '#FFFFFF',
     });
+    loader.classList.add('hidden');
+  }
+  form.reset();
 }
 
 function getGalleryItemHeight() {
@@ -51,13 +64,13 @@ function getGalleryItemHeight() {
 }
 
 function onLoadImages() {
-  countPage += 1;
-  document.querySelector('.load-btn').classList.add('hidden');
-  document.querySelector('.loader').classList.remove('hidden');
+  console.log(countPage);
+  loadBtn.classList.add('hidden');
+  loader.classList.remove('hidden');
   const galleryItemHeight = getGalleryItemHeight();
   getImages()
     .then(data => {
-      if (data.totalHits - 40 * countPage <= 0) {
+      if (data.totalHits - countPage * 40 <= 0) {
         iziToast.show({
           message: "We're sorry, but you've reached the end of search results.",
           position: 'topRight',
@@ -65,10 +78,11 @@ function onLoadImages() {
           titleColor: '#FFFFFF',
           messageColor: '#FFFFFF',
         });
-        document.querySelector('.load-btn').classList.add('hidden');
+        loadBtn.classList.add('hidden');
       } else {
+        countPage += 1;
         renderGallery(data.hits);
-        document.querySelector('.load-btn').classList.remove('hidden');
+        loadBtn.classList.remove('hidden');
         window.scrollBy({
           top: galleryItemHeight * 2,
           left: 0,
@@ -78,7 +92,7 @@ function onLoadImages() {
     })
     .catch(error => console.log(error))
     .finally(() => {
-      document.querySelector('.loader').classList.add('hidden');
+      loader.classList.add('hidden');
     });
 }
 
