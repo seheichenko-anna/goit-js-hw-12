@@ -20,6 +20,7 @@ async function onSearchImages(e) {
   e.preventDefault();
   gallery.innerHTML = '';
   loader.classList.remove('hidden');
+  loadBtn.classList.add('hidden');
   searchValue = form.elements.q.value.trim();
 
   try {
@@ -34,7 +35,6 @@ async function onSearchImages(e) {
           titleColor: '#FFFFFF',
           messageColor: '#FFFFFF',
         });
-        loadBtn.classList.add('hidden');
       } else {
         countPage = 1;
         renderGallery(data.hits);
