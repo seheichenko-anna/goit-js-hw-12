@@ -10,51 +10,52 @@ const loadBtn = document.querySelector('.load-btn');
 const loader = document.querySelector('.loader');
 
 let lightbox;
-let countPage;
+let countPage = 1;
 let searchValue;
 
 form.addEventListener('submit', onSearchImages);
 loadBtn.addEventListener('click', onLoadImages);
 
-function onSearchImages(e) {
+async function onSearchImages(e) {
   e.preventDefault();
   gallery.innerHTML = '';
   loader.classList.remove('hidden');
   searchValue = form.elements.q.value.trim();
-  if (searchValue !== '') {
-    getImages(searchValue)
-      .then(data => {
-        if (data.hits.length === 0) {
-          iziToast.show({
-            message:
-              'Sorry, there are no images matching your search query. Please try again!',
-            position: 'topRight',
-            backgroundColor: '#EF4040',
-            titleColor: '#FFFFFF',
-            messageColor: '#FFFFFF',
-          });
-          loadBtn.classList.add('hidden');
-        } else {
-          countPage = 1;
-          renderGallery(data.hits);
-          loadBtn.classList.remove('hidden');
-        }
-      })
-      .catch(error => console.log(error))
-      .finally(() => {
-        loader.classList.add('hidden');
+
+  try {
+    if (searchValue !== '') {
+      const data = await getImages(searchValue);
+      if (data.hits.length === 0) {
+        iziToast.show({
+          message:
+            'Sorry, there are no images matching your search query. Please try again!',
+          position: 'topRight',
+          backgroundColor: '#EF4040',
+          titleColor: '#FFFFFF',
+          messageColor: '#FFFFFF',
+        });
+        loadBtn.classList.add('hidden');
+      } else {
+        countPage = 1;
+        renderGallery(data.hits);
+        loadBtn.classList.remove('hidden');
+      }
+    } else {
+      iziToast.show({
+        message: 'Please fill out the search field',
+        position: 'topRight',
+        backgroundColor: '#EF4040',
+        titleColor: '#FFFFFF',
+        messageColor: '#FFFFFF',
       });
-  } else {
-    iziToast.show({
-      message: 'Please fill out the search field',
-      position: 'topRight',
-      backgroundColor: '#EF4040',
-      titleColor: '#FFFFFF',
-      messageColor: '#FFFFFF',
-    });
+      loader.classList.add('hidden');
+    }
+  } catch (error) {
+    console.log(error);
+  } finally {
     loader.classList.add('hidden');
+    form.reset();
   }
-  form.reset();
 }
 
 function getGalleryItemHeight() {
@@ -63,37 +64,36 @@ function getGalleryItemHeight() {
   return height;
 }
 
-function onLoadImages() {
-  console.log(countPage);
+async function onLoadImages() {
   loadBtn.classList.add('hidden');
   loader.classList.remove('hidden');
   const galleryItemHeight = getGalleryItemHeight();
-  getImages()
-    .then(data => {
-      if (data.totalHits - countPage * 40 <= 0) {
-        iziToast.show({
-          message: "We're sorry, but you've reached the end of search results.",
-          position: 'topRight',
-          backgroundColor: '#03a9f4',
-          titleColor: '#FFFFFF',
-          messageColor: '#FFFFFF',
-        });
-        loadBtn.classList.add('hidden');
-      } else {
-        countPage += 1;
-        renderGallery(data.hits);
-        loadBtn.classList.remove('hidden');
-        window.scrollBy({
-          top: galleryItemHeight * 2,
-          left: 0,
-          behavior: 'smooth',
-        });
-      }
-    })
-    .catch(error => console.log(error))
-    .finally(() => {
-      loader.classList.add('hidden');
+
+  try {
+    const data = await getImages();
+    countPage += 1;
+    renderGallery(data.hits);
+    loadBtn.classList.remove('hidden');
+    window.scrollBy({
+      top: galleryItemHeight * 2,
+      left: 0,
+      behavior: 'smooth',
     });
+    if (data.totalHits - countPage * 40 <= 0) {
+      iziToast.show({
+        message: "We're sorry, but you've reached the end of search results.",
+        position: 'topRight',
+        backgroundColor: '#03a9f4',
+        titleColor: '#FFFFFF',
+        messageColor: '#FFFFFF',
+      });
+      loadBtn.classList.add('hidden');
+    }
+  } catch (error) {
+    console.log(error);
+  } finally {
+    loader.classList.add('hidden');
+  }
 }
 
 const getImages = async function () {
