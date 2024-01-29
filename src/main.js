@@ -22,7 +22,7 @@ async function onSearchImages(e) {
   loader.classList.remove('hidden');
   loadBtn.classList.add('hidden');
   searchValue = form.elements.q.value.trim();
-
+  countPage = 1;
   try {
     if (searchValue !== '') {
       const data = await getImages(searchValue);
@@ -36,7 +36,6 @@ async function onSearchImages(e) {
           messageColor: '#FFFFFF',
         });
       } else {
-        countPage = 1;
         renderGallery(data.hits);
         loadBtn.classList.remove('hidden');
       }
@@ -68,10 +67,9 @@ async function onLoadImages() {
   loadBtn.classList.add('hidden');
   loader.classList.remove('hidden');
   const galleryItemHeight = getGalleryItemHeight();
-
+  countPage += 1;
   try {
     const data = await getImages();
-    countPage += 1;
     renderGallery(data.hits);
     loadBtn.classList.remove('hidden');
     window.scrollBy({
